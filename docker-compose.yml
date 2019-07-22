@@ -1,0 +1,45 @@
+version: '3.5'
+
+services:
+  nginx-php-fpm:
+    image: webdevops/php-nginx-dev:7.3
+    restart: always
+    container_name: nginx-php
+    ports:
+      - 80:80
+    networks:
+      custom_network:
+        ipv4_address: 172.30.0.10
+    environment:
+      - WEB_DOCUMENT_ROOT=/app
+      - WEB_DOCUMENT_INDEX=index.php
+    volumes:
+      - ./:/app
+
+  rabbitmq:
+    image: rabbitmq:3.7-management
+    restart: always
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      custom_network:
+        ipv4_address: 172.30.0.11
+    environment:
+      - RABBITMQ_NODENAME=rabbit@rabbitmq
+      - RABBITMQ_ERLANG_COOKIE=secret
+      - RABBITMQ_DEFAULT_USER=test
+      - RABBITMQ_DEFAULT_PASS=test
+    volumes:
+      - ./data:/var/lib/rabbitmq
+
+networks:
+  custom_network:
+    name: custom_network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.30.0.0/24
